@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appDb.name }}
+spec:
+  replicas: {{ .Values.appDb.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appDb.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appDb.app }}
+    spec:
+      serviceAccountName: app-db-sa
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data"]
+        volumeMounts:
+          - name: app-db-storage
+            mountPath: /var/lib/postgresql/data
+      containers:
+        - name: app-db
+          image: {{ .Values.appDb.image }}:{{ .Values.appDb.version }}
+          env:
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: app-db-k8s-secret
+                key: POSTGRES_DB
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: app-db-k8s-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: app-db-k8s-secret
+                key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: {{ .Values.appDb.port }}
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: app-db-storage
+              mountPath: /var/lib/postgresql/data
+            - name: vault-secrets
+              mountPath: /mnt/secrets-store
+              readOnly: true
+            - name: run-postgresql
+              mountPath: /var/run/postgresql
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: app-db-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.appDb.pvc.name }}
+        - name: vault-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "app-db-secrets"
+        - name: run-postgresql
+          emptyDir: {}

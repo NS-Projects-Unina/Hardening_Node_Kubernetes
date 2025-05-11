@@ -1,0 +1,4 @@
+com\felixcamp\WebAuthnResourceService.class
+com\felixcamp\WebAuthnResourceProvider.class
+com\felixcamp\WebAuthnResourceProviderFactory.class
+META-INF\services\org.keycloak.services.resource.RealmResourceProviderFactory

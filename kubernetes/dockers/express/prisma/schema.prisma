@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+model User {
+  id               String             @id @default(uuid()) @db.Uuid
+  username         String
+  email            String
+  bio              String?            @default("My bio")
+  otpEnabled       Boolean            @default(false)
+  enabled          Boolean            @default(true)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  experiences      Experience[]       @relation("UserExperiences")
+  savedExperiences SavedExperience[]
+
+  @@map("users")
+}
+
+model Experience {
+  id          String             @id @default(uuid()) @db.Uuid
+  title       String
+  content     String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  isPrivate   Boolean            @default(false)
+  authorId    String             @db.Uuid
+  author      User               @relation("UserExperiences", fields: [authorId], references: [id])
+  categories  Category[]         @relation("ExperienceCategories")
+  savedBy     SavedExperience[]
+
+  @@map("experiences")
+}
+
+model Category {
+  id          String             @id @default(uuid()) @db.Uuid
+  name        String             @unique
+  experiences Experience[]       @relation("ExperienceCategories")
+
+  @@map("categories")
+}
+
+model SavedExperience {
+  id            String        @id @default(uuid()) @db.Uuid
+  userId        String        @db.Uuid
+  experienceId  String        @db.Uuid
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experience    Experience    @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, experienceId])
+  @@map("saved_experiences")
+}

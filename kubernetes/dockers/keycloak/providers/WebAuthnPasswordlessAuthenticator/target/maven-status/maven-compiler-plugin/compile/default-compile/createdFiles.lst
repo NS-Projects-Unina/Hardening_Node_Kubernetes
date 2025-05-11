@@ -1,0 +1,2 @@
+com\example\keycloak\authenticator\WebAuthnPasswordlessAuthenticatorFactory.class
+com\example\keycloak\authenticator\WebAuthnPasswordlessAuthenticator.class

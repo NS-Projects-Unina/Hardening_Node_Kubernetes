@@ -1,0 +1,40 @@
+---
+env:
+  contexts:
+    - name: frasco-api
+      urls:
+        - https://api.frascoengineer.com
+      includePaths:
+        - https://api.frascoengineer.com.*
+      excludePaths:
+        - https://api.frascoengineer.com/user/edit-email
+        - https://api.frascoengineer.com/user/edit-username
+        - https://api.frascoengineer.com/user/edit-password
+      authentication:
+        method: script
+        parameters:
+          script: auth_script.js
+          scriptEngine: Graal.js
+        verification:
+          method: response
+          pollUrl: https://api.frascoengineer.com/user/sessions
+          pollFrequency: 5
+          pollUnits: seconds
+          loggedInRegex: "Sessions returned"
+          loggedOutRegex: "Unauthorized"
+      sessionManagement:
+        method: cookie
+      users:
+        - name: zap-user
+          credentials:
+            email: zap@email.com
+            password: zap
+
+jobs:
+  - type: activeScan
+    parameters:
+      name: Active Scan the API
+      context: frasco-api
+      user: zap-user
+      policy: Default Policy
+      url: https://api.frascoengineer.com

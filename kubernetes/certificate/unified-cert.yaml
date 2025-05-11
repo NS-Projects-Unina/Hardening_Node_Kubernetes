@@ -1,0 +1,19 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: unified-cert
+  namespace: app
+spec:
+  secretName: unified-cert
+  duration: 2160h
+  renewBefore: 360h
+  dnsNames:
+    - api.frascoengineer.com
+    - admin-auth.frascoengineer.com
+    - admin-vault.frascoengineer.com
+    - admin-grafana.frascoengineer.com
+    - cert.frascoengineer.com
+  issuerRef:
+    name: letsencrypt-cloudflare
+    kind: ClusterIssuer

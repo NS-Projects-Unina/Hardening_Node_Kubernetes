@@ -1,0 +1,34 @@
+.session-list {
+  list-style: none;
+  padding: 0;
+}
+
+.session-item {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.current-session {
+  border-color: #4caf50;
+  background-color: #e8f5e9;
+}
+
+.current-label {
+  font-weight: bold;
+  color: #4caf50;
+}
+.delete-session-btn {
+  margin-top: 0.5rem;
+  background: #ff5252;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-session-btn:hover {
+  background: #e53935;
+}

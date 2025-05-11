@@ -1,0 +1,4 @@
+apiVersion: v2
+name: my-app
+description: Deploy Express + Keycloak + DB on Minikube
+version: 0.1.0

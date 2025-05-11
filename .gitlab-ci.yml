@@ -1,0 +1,329 @@
+---
+stages:
+  - sast
+  - container-scan
+  - build
+  - lint
+  - deploy
+  - kube-security
+  - dast_zap
+  - collect_reports
+
+sast_express:
+  stage: sast
+  image: python:3.11-alpine
+  before_script:
+    - apk add --no-cache git nodejs npm
+    - pip install nodejsscan
+    - npm install -g eslint
+  script:
+    - cd kubernetes/dockers/express
+    - eslint . -f json -o "$CI_PROJECT_DIR/eslint_report.json"
+    - nodejsscan -d . -o "$CI_PROJECT_DIR/nodejsscan_report.json"
+    - |
+      python3 -c "
+      import json, sys
+      from pprint import pprint
+      with open('$CI_PROJECT_DIR/nodejsscan_report.json') as f:
+          report = json.load(f)
+          issues = report.get('sec_issues', {})
+          mis_headers = report.get('missing_sec_header', {}).get('Web Security', [])
+          relevant_mis_headers = [
+              h for h in mis_headers
+              if 'Public-Key-Pins' not in h.get('title', '')
+          ]
+          if issues:
+              print('=== Security Issues Detected ===')
+              for category, problems in issues.items():
+                  print(f'- {category}:')
+                  for item in problems:
+                      print(f\"  • {item.get('title', 'Untitled')} [{item.get('filename', '?')}:{item.get('line', '?')}]\")
+
+          if relevant_mis_headers:
+              print('=== Missing Security Headers (excluding HPKP) ===')
+              for h in relevant_mis_headers:
+                  print(f\"  • {h.get('title')}\")
+          if issues or relevant_mis_headers:
+              print('Security issues found (excluding HPKP): failing job.')
+              sys.exit(1)
+      "
+  artifacts:
+    when: always
+    paths:
+      - eslint_report.json
+      - nodejsscan_report.json
+  only:
+    - web
+
+container_scan_express:
+  stage: container-scan
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+  script:
+    - cd kubernetes/dockers/express
+    - docker build -t express-backend:ci .
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL --format json -o trivy_report_express.json express-backend:ci
+    - trivy image --severity HIGH,CRITICAL express-backend:ci --exit-code 1
+  artifacts:
+    when: always
+    paths:
+      - kubernetes/dockers/express/trivy_report_express.json
+  needs:
+    - job: sast_express
+      artifacts: false
+  only:
+    - web
+
+container_scan_keycloak:
+  stage: container-scan
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+  script:
+    - cd kubernetes/dockers/keycloak
+    - docker build -t keycloak-custom:ci .
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL --format json -o trivy_report_keycloak.json keycloak-custom:ci
+    - trivy image --severity HIGH,CRITICAL keycloak-custom:ci --exit-code 1
+  artifacts:
+    when: always
+    paths:
+      - kubernetes/dockers/keycloak/trivy_report_keycloak.json
+  only:
+    - web
+
+docker_push_express:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - cd kubernetes/dockers/express
+    - docker build -t "$CI_REGISTRY_IMAGE/express:latest" -t "$CI_REGISTRY_IMAGE/express:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE/express:$CI_COMMIT_SHORT_SHA"
+  needs:
+    - job: container_scan_express
+      artifacts: false
+    - job: container_scan_keycloak
+      artifacts: false
+  only:
+    - web
+
+docker_push_keycloak:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+  script:
+    - cd kubernetes/dockers/keycloak
+    - docker build -t "$CI_REGISTRY_IMAGE/keycloak:latest" -t "$CI_REGISTRY_IMAGE/keycloak:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$CI_REGISTRY_IMAGE/keycloak:$CI_COMMIT_SHORT_SHA"
+  needs:
+    - job: container_scan_keycloak
+      artifacts: false
+    - job: container_scan_express
+      artifacts: false
+  only:
+    - web
+
+lint_helm_and_manifests:
+  stage: lint
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache bash curl git tar python3 py3-pip openssl
+    - pip install --break-system-packages yamllint
+    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  script:
+    - helm lint kubernetes/chart
+    - yamllint kubernetes/certificate/
+    - yamllint kubernetes/vault-csi/
+  needs:
+    - job: docker_push_keycloak
+      artifacts: false
+    - job: docker_push_express
+      artifacts: false
+  only:
+    - web
+
+helm_deploy_backend:
+  stage: deploy
+  image: alpine:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache curl bash git openssl jq
+    - curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+    - chmod +x /usr/local/bin/yq
+    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+    - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" | bash
+    - chmod +x kubectl && mv kubectl /usr/local/bin/
+    - |
+      CLUSTER_ID=$(curl -s -X GET \
+        -H "Authorization: Bearer $DO_API_TOKEN" \
+        "https://api.digitalocean.com/v2/kubernetes/clusters" \
+        | jq -r '.kubernetes_clusters[] | select(.name == env.DO_CLUSTER_NAME) | .id')
+
+      curl -s -X GET \
+        -H "Authorization: Bearer $DO_API_TOKEN" \
+        "https://api.digitalocean.com/v2/kubernetes/clusters/$CLUSTER_ID/kubeconfig" \
+        -o kubeconfig
+
+      export KUBECONFIG=$CI_PROJECT_DIR/kubeconfig
+  script:
+    - export KUBECONFIG=./kubeconfig
+    - yq e '.express.image = "'"$CI_REGISTRY_IMAGE/express"'"' -i kubernetes/chart/values.yaml
+    - yq e '.express.version = "'"$CI_COMMIT_SHORT_SHA"'"' -i kubernetes/chart/values.yaml
+    - yq e '.keycloak.image = "'"$CI_REGISTRY_IMAGE/keycloak"'"' -i kubernetes/chart/values.yaml
+    - yq e '.keycloak.version = "'"$CI_COMMIT_SHORT_SHA"'"' -i kubernetes/chart/values.yaml
+    - helm upgrade --install app kubernetes/chart -n app -f kubernetes/chart/values.yaml
+    - kubectl apply -f kubernetes/certificate/
+    - kubectl apply -f kubernetes/vault-csi/
+  needs:
+    - job: lint_helm_and_manifests
+      artifacts: false
+  only:
+    - web
+
+kubescape_scan:
+  stage: kube-security
+  image: alpine:latest
+  services:
+    - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
+  before_script:
+    - apk add --no-cache curl bash git openssl jq
+    - curl -s https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | /bin/bash
+    - |
+      CLUSTER_ID=$(curl -s -X GET \
+        -H "Authorization: Bearer $DO_API_TOKEN" \
+        "https://api.digitalocean.com/v2/kubernetes/clusters" \
+        | jq -r '.kubernetes_clusters[] | select(.name == env.DO_CLUSTER_NAME) | .id')
+
+      curl -s -X GET \
+        -H "Authorization: Bearer $DO_API_TOKEN" \
+        "https://api.digitalocean.com/v2/kubernetes/clusters/$CLUSTER_ID/kubeconfig" \
+        -o kubeconfig
+
+      export KUBECONFIG=$CI_PROJECT_DIR/kubeconfig
+  script:
+    - export KUBECONFIG=./kubeconfig
+    - kubescape scan framework nsa --exclude-namespaces kube-system,kube-public,default,vault,ingress-nginx,cert-manager,monitoring,tetragon --format json --format-version v2 --output results.json
+    - kubescape scan framework nsa --exclude-namespaces kube-system,kube-public,default,vault,ingress-nginx,cert-manager,monitoring,tetragon --format html --format-version v2 --output kubescape_report.html
+    - |
+      CRITICAL=$(jq '[.summaryDetails.resourcesSeverityCounters.criticalSeverity] | add' results.json)
+      HIGH=$(jq '[.summaryDetails.resourcesSeverityCounters.highSeverity] | add' results.json)
+
+      echo "Critical: $CRITICAL | High: $HIGH"
+      if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+        echo "High/Critical Vulnerabilities Found."
+        exit 1
+      else
+        echo "Vulnerabilities Not Found."
+      fi
+  artifacts:
+    when: always
+    paths:
+      - kubescape_report.html
+  needs:
+    - job: helm_deploy_backend
+  only:
+    - web
+
+dast_scan:
+  stage: dast_zap
+  image: ghcr.io/zaproxy/zaproxy:stable
+  allow_failure: false
+  script:
+    - mkdir -p /zap/wrk
+    - cp zap_config.yaml /zap/wrk/
+    - cp auth_script.js /zap/wrk/
+    - cp openapi.json /zap/wrk/
+    - zap.sh -daemon -port 8090 -host 0.0.0.0 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true -addoninstall authhelper -addoninstall graaljs &
+    - sleep 30
+    - curl "http://localhost:8090/JSON/openapi/action/importFile/?file=/zap/wrk/openapi.json"
+    - sleep 10
+    - curl -X POST "http://localhost:8090/JSON/automation/action/runPlan/" -d "filePath=/zap/wrk/zap_config.yaml"
+    - |
+      while true; do
+        finished=$(curl -s "http://localhost:8090/JSON/automation/view/planProgress/?planId=0" | jq -r '.finished') 
+
+        if [ -n "$finished" ]; then
+          echo "Scan completed at: $finished"
+          break
+        fi
+
+        sleep 2
+      done
+    - curl "http://localhost:8090/OTHER/core/other/htmlreport/" -o zap_report.html
+  artifacts:
+    when: always
+    paths:
+      - zap_report.html
+  needs:
+    - job: kubescape_scan
+  only:
+    - web
+
+collect_reports:
+  stage: collect_reports
+  image: python:3.11-alpine
+  dependencies:
+    - sast_express
+    - container_scan_express
+    - container_scan_keycloak
+    - kubescape_scan
+    - dast_scan
+  before_script:
+    - apk add --no-cache py3-pip
+    - pip install pandas
+  when: always
+  script:
+    - mkdir -p report_workspace
+
+    - cp -v eslint_report.json report_workspace/ 2>/dev/null || true
+    - cp -v nodejsscan_report.json report_workspace/ 2>/dev/null || true
+    - cp -v kubernetes/dockers/express/trivy_report_express.json report_workspace/ 2>/dev/null || true
+    - cp -v kubernetes/dockers/keycloak/trivy_report_keycloak.json report_workspace/ 2>/dev/null || true
+    - cp -v kubescape_report.html report_workspace/ 2>/dev/null || true
+    - cp -v zap_report.html report_workspace/ 2>/dev/null || true
+    - cp -v generate_combined_report.py report_workspace/
+    - cd report_workspace
+    - python3 generate_combined_report.py
+    - cd ..
+    - mv report_workspace/combined_report.html ./combined_report.html
+  artifacts:
+    when: always
+    paths:
+      - combined_report.html
+      - report_workspace/*.json
+      - report_workspace/kubescape_report.html
+    name: "security-reports"
+  only:
+    - web

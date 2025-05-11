@@ -1,0 +1,2 @@
+com\example\keycloak\authenticator\GoogleFederatedAuthenticatorFactory.class
+com\example\keycloak\authenticator\GoogleDirectGrantAuthenticator.class

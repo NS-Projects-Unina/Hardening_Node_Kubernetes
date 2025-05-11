@@ -1,0 +1,3 @@
+com\example\keycloak\UserSyncEventListenerProviderFactory.class
+com\example\keycloak\UserSyncEventListenerProvider$1.class
+com\example\keycloak\UserSyncEventListenerProvider.class

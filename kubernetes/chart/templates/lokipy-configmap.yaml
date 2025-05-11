@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lokipy-script
+  namespace: monitoring
+data:
+  main.py: |
+{{ .Files.Get "scripts/main.py" | indent 4 }}

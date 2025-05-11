@@ -1,0 +1,8 @@
+loki:
+  enabled: true
+  isDefault: true
+promtail:
+  enabled: true
+  config:
+    clients:
+      - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push

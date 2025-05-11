@@ -1,0 +1,13 @@
+.backbar {
+  width: 100%;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.backbar button {
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+}

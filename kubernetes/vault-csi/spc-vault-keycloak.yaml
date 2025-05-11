@@ -1,0 +1,46 @@
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: keycloak-secrets
+  namespace: app
+spec:
+  provider: vault
+  parameters:
+    roleName: "keycloak-role"
+    vaultAddress: "http://vault.vault.svc.cluster.local:8200"
+    objects: |
+      - objectName: "kc_db_name"
+        secretPath: "secret/data/keycloak-db"
+        secretKey: "name"
+      - objectName: "kc_db_password"
+        secretPath: "secret/data/keycloak-db"
+        secretKey: "password"
+      - objectName: "kc_db_user"
+        secretPath: "secret/data/keycloak-db"
+        secretKey: "user"
+      - objectName: "app_db_name"
+        secretPath: "secret/data/app-db"
+        secretKey: "name"
+      - objectName: "app_db_user"
+        secretPath: "secret/data/app-db"
+        secretKey: "user"
+      - objectName: "app_db_password"
+        secretPath: "secret/data/app-db"
+        secretKey: "password"
+  secretObjects:
+    - secretName: keycloak-k8s-secret
+      type: Opaque
+      data:
+        - objectName: "kc_db_name"
+          key: "KC_DB_URL_DATABASE"
+        - objectName: "kc_db_password"
+          key: "KC_DB_PASSWORD"
+        - objectName: "kc_db_user"
+          key: "KC_DB_USERNAME"
+        - objectName: "app_db_name"
+          key: "APP_DB_NAME"
+        - objectName: "app_db_user"
+          key: "APP_DB_USER"
+        - objectName: "app_db_password"
+          key: "APP_DB_PASSWORD"

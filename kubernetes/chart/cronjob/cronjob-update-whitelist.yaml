@@ -1,0 +1,70 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: update-whitelist
+  namespace: monitoring
+spec:
+  schedule: "*/5 * * * *"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: whitelist-updater
+          restartPolicy: OnFailure
+          containers:
+            - name: resolver
+              image: busybox:1.35
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  IP=$(nslookup nsproject.ddns.net | awk '/^Address: / { print $2 }' | tail -n1)
+                  echo "$IP" > /data/ip.txt
+                  IP1=$(nslookup nsproject1.ddns.net | awk '/^Address: / { print $2 }' | tail -n1)
+                  echo "$IP1" > /data/ip1.txt
+              volumeMounts:
+                - name: shared-data
+                  mountPath: /data
+            - name: patcher
+              image: bitnami/kubectl:latest
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  sleep 10
+                  IP=$(cat /data/ip.txt)
+                  if [ -z "$IP" ]; then
+                    echo "Errore: IP non trovato"
+                    exit 1
+                  fi
+                  IP1=$(cat /data/ip1.txt)
+                  if [ -z "$IP1" ]; then
+                    echo "Errore: IP1 non trovato"
+                    exit 1
+                  fi
+                  echo "Patching con IP: $IP"
+                  echo "Patching con IP: $IP1"
+                  kubectl patch ingress monitoring-nginx-ingress \
+                    -n monitoring \
+                    --type=merge \
+                    -p "{\"metadata\":{\"annotations\":{\"nginx.ingress.kubernetes.io/whitelist-source-range\":\"$IP/32\,$IP1/32\"}}}"
+
+                  kubectl patch ingress keycloak-nginx-ingress \
+                  -n app \
+                  --type=merge \
+                    -p "{\"metadata\":{\"annotations\":{\"nginx.ingress.kubernetes.io/whitelist-source-range\":\"$IP/32\,$IP1/32\"}}}"
+                           
+                  kubectl patch ingress unified-ingress \
+                  -n vault \
+                  --type=merge \
+                    -p "{\"metadata\":{\"annotations\":{\"nginx.ingress.kubernetes.io/whitelist-source-range\":\"$IP/32\,$IP1/32\"}}}"
+                      echo "Patch applicato con successo"
+              volumeMounts:
+                - name: shared-data
+                  mountPath: /data
+          volumes:
+            - name: shared-data
+              emptyDir: {}

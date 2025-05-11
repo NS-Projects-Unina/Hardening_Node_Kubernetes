@@ -1,0 +1,81 @@
+.experience-card {
+  border: 1px solid #e0e0e0;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #fafafa;
+  margin-bottom: 1rem;
+}
+
+.experience-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.experience-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.privacy-info {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.edit-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #444;
+  font-size: 1.1rem;
+}
+
+.edit-button:hover {
+  color: #000;
+}
+
+.experience-content h4 {
+  margin: 0 0 0.5rem;
+}
+
+.experience-content p {
+  margin: 0 0 1rem;
+}
+
+.experience-meta small {
+  display: block;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.editexp-dialog-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.editexp-dialog-content input {
+  width: 90%;
+}
+
+.editexp-dialog-content textarea {
+  width: 90%;
+}
+
+.editexp-dialog-content .buttons {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.editexp-dialog-content .delete-description {
+  height: 80px;
+  font-weight: bold;
+  margin-top: 20px;
+}

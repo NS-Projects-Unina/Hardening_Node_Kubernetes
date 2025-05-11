@@ -1,0 +1,2 @@
+com\example\keycloak\authenticator\ConditionalOTPCheckAuthenticatorFactory.class
+com\example\keycloak\authenticator\ConditionalOTPCheckAuthenticator.class

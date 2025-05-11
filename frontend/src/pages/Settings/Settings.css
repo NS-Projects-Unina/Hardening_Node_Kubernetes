@@ -1,0 +1,71 @@
+.settings-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100%;
+  flex-grow: 1;
+}
+
+/* Menu a sinistra */
+.settings-menu {
+  width: 240px;
+  padding: 1rem;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-link {
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  color: #333;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.settings-link:hover {
+  background-color: #f0f0f0;
+}
+
+.settings-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Contenuto a destra */
+.settings-content {
+  flex: 1;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .settings-container {
+    flex-direction: column;
+  }
+
+  .settings-menu {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .settings-link {
+    padding: 1rem;
+    text-align: left;
+    font-size: 1rem;
+  }
+}
+.settings-backbar {
+  width: 100%;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+}
+
+.settings-backbar button {
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+}

@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lokipy
+  namespace: monitoring
+  labels:
+    app: lokipy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lokipy
+  template:
+    metadata:
+      labels:
+        app: lokipy
+    spec:
+      containers:
+        - name: lokipy-bot
+          image: python:3.11-alpine
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              apk add --no-cache py3-pip && 
+              pip install requests && 
+              python /app/main.py
+          env:
+            - name: TELEGRAM_TOKEN
+              value: "{{ .Values.lokipy.telegramToken }}"
+            - name: TELEGRAM_CHAT_ID
+              value: "{{ .Values.lokipy.telegramChatId }}"
+            - name: LOKI_URL
+              value: "{{ .Values.lokipy.lokiUrl }}"
+            - name: CHECK_INTERVAL
+              value: "{{ .Values.lokipy.checkInterval }}"
+          volumeMounts:
+            - name: script
+              mountPath: /app
+            - name: state
+              mountPath: /tmp
+      volumes:
+        - name: script
+          configMap:
+            name: lokipy-script
+        - name: state
+          emptyDir: {}

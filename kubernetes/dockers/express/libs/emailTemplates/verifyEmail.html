@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Verify Your Email</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+
+      .email-container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      .email-header {
+        background-color: #4a90e2;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        font-size: 24px;
+      }
+
+      .email-body {
+        padding: 30px;
+        color: #333;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+
+      .email-footer {
+        padding: 20px;
+        text-align: center;
+        font-size: 12px;
+        color: #888;
+        background-color: #f9f9f9;
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 12px 24px;
+        margin-top: 20px;
+        background-color: #4a90e2;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+
+      .btn:hover {
+        background-color: #3d7bc0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-header">
+        Verify Your Email
+      </div>
+      <div class="email-body">
+        <p>Hi there,</p>
+        <p>Thank you for signing up for ExpSharing! Please verify your email address by clicking the button below:</p>
+        <p style="text-align: center;">
+          <a href="{{verifyLink}}" class="btn">Verify Email</a>
+        </p>
+        <p>If you didn’t create this account, you can safely ignore this email.</p>
+      </div>
+      <div class="email-footer">
+        &copy; 2025 ExpSharing. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

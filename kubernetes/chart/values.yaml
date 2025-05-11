@@ -1,0 +1,70 @@
+imagePullSecrets: 
+  - name: gitlab-registry-secret
+
+express:
+  app: express
+  replicas: 1
+  name: express
+  image: express
+  version: v1
+  pullPolicy: Always
+  port: 80
+  targetPort: 4000
+  serviceAccount: express-sa
+  env:
+    EXPRESS_PORT: "4000"
+    FE_HOSTNAME: "https://www.frascoengineer.com"
+    KC_REALM: "app"
+    KC_MONITOR_INTERVAL_SEC: "1"
+    EMAIL_RESET_ATTEMPTS: "3"
+    EMAIL_RESET_LIMIT_TIME_SEC: "15"
+    EMAIL_RESET_T_EXPIRE_MIN: "15"
+    EMAIL_VERIFY_T_EXPIRE_MIN: "60"
+    DB_MONITOR_INTERVAL_SEC: "1"
+
+lokipy:
+  telegramToken: "7870182424:AAE6MzbaDxDysnc5WMd_4jkVUdlEanyUHSI"
+  telegramChatId: "-4758939355"
+  lokiUrl: "http://loki.monitoring.svc.cluster.local:3100/"
+  checkInterval: "10"
+
+appDb:
+  app: app-db
+  name: app-db
+  replicas: 1
+  image: postgres
+  version: 15
+  port: 5432
+  targetPort: 5432
+  serviceAccount: app-db-sa
+  pv:
+    name: app-db-pv
+  pvc:
+    name: app-db-pvc
+
+keycloak:
+  app: keycloak
+  name: keycloak
+  replicas: 1
+  image: keycloak
+  version: v1
+  pullPolicy: Always
+  port: 8080
+  adminUser: admin
+  adminPassword: admin
+  serviceAccount: keycloak-sa
+
+keycloakDb:
+  name: keycloak-db
+  app: keycloak-db
+  image: postgres
+  version: 15
+  port: 5432
+  serviceAccount: keycloak-db-sa
+  pv:
+    name: keycloak-db-pv
+  pvc:
+    name: keycloak-db-pvc
+
+ingress:
+  host: app.localapp

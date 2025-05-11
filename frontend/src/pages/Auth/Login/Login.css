@@ -1,0 +1,119 @@
+.login-form-div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  justify-content: center;
+}
+
+.login-form-div .title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-form-div .description-div {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.login-form-div .actions {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding-top: 10px;
+}
+
+.login-form-div .button {
+  width: 80%;
+}
+
+.login-form-div .remember-me {
+  width: 100%;
+  display: flex;
+}
+
+.login-form-div .remember-me a {
+  margin-left: auto;
+  margin-right: 3px;
+  cursor: pointer;
+}
+
+.login-form-div .remember-me label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 10px;
+  margin-left: 2px;
+  user-select: none;
+}
+
+.login-form-div .password-input {
+  margin-bottom: 7px !important;
+}
+
+.login-form-div .actions a {
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.dialog-content img {
+  max-width: 200px;
+}
+
+.dialog-content input {
+  max-width: 150px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.dialog-content button {
+  max-width: 200px;
+}
+
+.dialog-content .alert {
+  margin-top: 10px;
+  margin-bottom: 0px;
+}
+
+.dialog-content .email-icon-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 10px;
+}
+
+.dialog-content .email-icon-container .email-icon {
+  width: 100%;
+  height: 100%;
+  color: #2563eb;
+}
+
+.dialog-content .email-icon-container .check-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  color: #22c55e;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px white;
+}
+
+.dialog-content .input-email {
+  text-align: left;
+  max-width: 100% !important;
+}

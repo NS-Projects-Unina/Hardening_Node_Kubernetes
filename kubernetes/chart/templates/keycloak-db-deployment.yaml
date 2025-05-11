@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.keycloakDb.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.keycloakDb.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.keycloakDb.app }}
+    spec:
+      serviceAccountName: keycloak-db-sa
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data"]
+        volumeMounts:
+          - name: keycloak-db-storage
+            mountPath: /var/lib/postgresql/data
+      containers:
+        - name: {{ .Values.keycloakDb.name }}
+          image: {{ .Values.keycloakDb.image }}:{{ .Values.keycloakDb.version }}
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-k8s-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-k8s-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-db-k8s-secret
+                  key: POSTGRES_PASSWORD
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          volumeMounts:
+            - name: keycloak-db-storage
+              mountPath: /var/lib/postgresql/data
+            - name: vault-secrets
+              mountPath: /mnt/secrets-store
+              readOnly: true
+            - name: run-postgresql
+              mountPath: /var/run/postgresql
+          securityContext:
+            runAsUser: 999
+            runAsGroup: 999
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: keycloak-db-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.keycloakDb.pvc.name }}
+        - name: vault-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "keycloak-db-secrets"
+        - name: run-postgresql
+          emptyDir: {}

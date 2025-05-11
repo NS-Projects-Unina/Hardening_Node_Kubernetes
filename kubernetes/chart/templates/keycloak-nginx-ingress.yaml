@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-nginx-ingress
+  namespace: app
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "0.0.0.0/0"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - admin-vault.frascoengineer.com
+    - admin-auth.frascoengineer.com
+    - api.frascoengineer.com
+    - admin-grafana.frascoengineer.com
+    - cert.frascoengineer.com
+    secretName: unified-cert
+  rules:
+  - host: admin-auth.frascoengineer.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: keycloak
+            port:
+              number: 8080

@@ -1,0 +1,31 @@
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: app-db-secrets
+  namespace: app
+spec:
+  provider: vault
+  parameters:
+    roleName: "app-db-role"
+    vaultAddress: "http://vault.vault.svc.cluster.local:8200"
+    objects: |
+      - objectName: "APP_DB_NAME"
+        secretPath: "secret/data/app-db"
+        secretKey: "name"
+      - objectName: "APP_DB_USER"
+        secretPath: "secret/data/app-db"
+        secretKey: "user"
+      - objectName: "APP_DB_PASSWORD"
+        secretPath: "secret/data/app-db"
+        secretKey: "password"
+  secretObjects:
+    - secretName: app-db-k8s-secret
+      type: Opaque
+      data:
+        - objectName: "APP_DB_NAME"
+          key: "POSTGRES_DB"
+        - objectName: "APP_DB_USER"
+          key: "POSTGRES_USER"
+        - objectName: "APP_DB_PASSWORD"
+          key: "POSTGRES_PASSWORD"

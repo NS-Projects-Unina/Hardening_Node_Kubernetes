@@ -1,0 +1,18 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: tetragon-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: tetragon.rules
+    rules:
+    - alert: SuspiciousShellInExpress
+      expr: increase(tetragon_process_exec_total{pod=~"express.*"}[1m]) > 0
+      for: 0m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Esecuzione shell sospetta nel pod Express"
+        description: "Rilevato comando sospetto nel pod {{ $labels.pod }}."

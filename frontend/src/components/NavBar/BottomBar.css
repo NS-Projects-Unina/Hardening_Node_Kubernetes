@@ -1,0 +1,49 @@
+.bottombar-div {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2979af;
+  color: #143c57;
+  font-size: 14px;
+  padding: 10px;
+  font-weight: bold;
+  display: none;
+  position: fixed;
+  bottom: 0;
+}
+
+.bottombar-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bottombar-btn {
+  background-color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.bottombar-btn:hover {
+  background-color: #eee;
+}
+
+.bottombar-btn.active {
+  background-color: #007bff;
+  color: white;
+}
+
+@media (max-width: 450px) {
+  .bottombar-div {
+    display: flex;
+  }
+}

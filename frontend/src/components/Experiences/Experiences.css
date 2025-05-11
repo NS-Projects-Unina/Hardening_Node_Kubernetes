@@ -1,0 +1,57 @@
+.experiences-div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  flex-grow: 1;
+  margin-top: 20px;
+  padding: 10px;
+}
+
+.experiences-div .loading-div {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.experiences-div .exps-div {
+  width: 100%;
+  height: 100%;
+}
+
+.filter {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.filter select {
+  width: 90%;
+}
+
+.loading-div {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  animation: slow-rotation 8s linear infinite;
+}
+
+.empty-exps {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-weight: bold;
+}
+
+@keyframes slow-rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

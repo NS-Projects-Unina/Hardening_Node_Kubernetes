@@ -1,0 +1,839 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Frasco API",
+    "version": "1.0.0",
+    "description": "OpenAPI spec generated for Express Auth routes, to be used with ZAP DAST."
+  },
+  "servers": [
+    {
+      "url": "https://api.frascoengineer.com"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User successfully logged in"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "summary": "Signup user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User successfully registered"
+          },
+          "409": {
+            "description": "User already exists"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout user",
+        "responses": {
+          "200": {
+            "description": "Logout completed"
+          },
+          "401": {
+            "description": "Refresh token missing or invalid"
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "get": {
+        "summary": "Refresh access token",
+        "responses": {
+          "200": {
+            "description": "Access token refreshed"
+          },
+          "401": {
+            "description": "Refresh token invalid or missing"
+          }
+        }
+      }
+    },
+    "/auth/introspect": {
+      "get": {
+        "summary": "Introspect access token",
+        "responses": {
+          "200": {
+            "description": "Token valid"
+          },
+          "401": {
+            "description": "Token missing or invalid"
+          }
+        }
+      }
+    },
+    "/auth/otp/verify": {
+      "post": {
+        "summary": "Verify OTP code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyOtpBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP configured and verified"
+          },
+          "400": {
+            "description": "Missing fields or invalid OTP"
+          }
+        }
+      }
+    },
+    "/auth/reset-password-email": {
+      "post": {
+        "summary": "Send reset password email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailOnlyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent"
+          },
+          "400": {
+            "description": "Missing email"
+          }
+        }
+      }
+    },
+    "/auth/reset-password-email-verify": {
+      "post": {
+        "summary": "Reset password after email verification",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordVerifyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated"
+          },
+          "400": {
+            "description": "Invalid token or password missing"
+          }
+        }
+      }
+    },
+    "/auth/email-verify": {
+      "post": {
+        "summary": "Verify email after required action",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenOnlyBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified"
+          },
+          "400": {
+            "description": "Invalid token"
+          }
+        }
+      }
+    },
+    "/user/edit-username": {
+      "post": {
+        "summary": "Edit username",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditUsernameBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Username updated"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/edit-email": {
+      "post": {
+        "summary": "Edit email",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditEmailBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email updated"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/configure-otp": {
+      "get": {
+        "summary": "Generate OTP configuration",
+        "responses": {
+          "200": {
+            "description": "OTP configuration returned"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/verify-otp": {
+      "post": {
+        "summary": "Verify OTP",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OTPCodeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP verified"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/disable-otp": {
+      "post": {
+        "summary": "Disable OTP with code",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OTPCodeBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP disabled"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/edit-password": {
+      "post": {
+        "summary": "Edit password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditPasswordBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password updated"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/user/sessions": {
+      "get": {
+        "summary": "Get user sessions",
+        "responses": {
+          "200": {
+            "description": "Sessions returned"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    },
+    "/webauthn/options": {
+      "get": {
+        "summary": "Get WebAuthn registration options",
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Options returned"
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webauthn/register": {
+      "post": {
+        "summary": "Register WebAuthn credential",
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "label",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device registered"
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webauthn/generate-authentication-options": {
+      "post": {
+        "summary": "Generate WebAuthn authentication options",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Options returned"
+          },
+          "400": {
+            "description": "Missing email"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webauthn/verify-authentication": {
+      "post": {
+        "summary": "Verify WebAuthn authentication",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  },
+                  "response": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "email",
+                  "id",
+                  "response"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication verified"
+          },
+          "400": {
+            "description": "Missing fields"
+          },
+          "401": {
+            "description": "Authentication failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webauthn/devices": {
+      "get": {
+        "summary": "Get registered WebAuthn devices",
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Devices returned"
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/webauthn/devices/{id}": {
+      "delete": {
+        "summary": "Delete a WebAuthn device",
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device deleted"
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update label of a WebAuthn device",
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Label updated"
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/graphql": {
+      "post": {
+        "summary": "GraphQL API",
+        "description": "Endpoint principale per tutte le query e mutation GraphQL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string"
+                  },
+                  "variables": {
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risposta corretta della query GraphQL"
+          },
+          "400": {
+            "description": "Errore di validazione"
+          },
+          "401": {
+            "description": "Non autorizzato"
+          }
+        },
+        "security": [
+          {
+            "accessTokenCookie": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "remember": {
+            "type": "boolean"
+          },
+          "otpCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "SignupBody": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "repeatPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "password",
+          "repeatPassword"
+        ]
+      },
+      "VerifyOtpBody": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "email"
+        ]
+      },
+      "EmailOnlyBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "TokenOnlyBody": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "ResetPasswordVerifyBody": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "newPassword",
+          "token"
+        ]
+      },
+      "EditUsernameBody": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "username"
+        ]
+      },
+      "EditEmailBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "OTPCodeBody": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "EditPasswordBody": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "repeatPassword": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "repeatPassword"
+        ]
+      },
+      "DeleteSessionBody": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sessionId"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "accessTokenCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "accessToken",
+        "description": "JWT token stored in cookie after login"
+      }
+    }
+  }
+}

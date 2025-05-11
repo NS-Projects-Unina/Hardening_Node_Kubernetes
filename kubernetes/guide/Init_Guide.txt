@@ -1,0 +1,78 @@
+Inizializzazione di minikube:
+
+Se c'è già un immagine cancellarla:
+minikube delete
+
+Impostare le risorse per minikube (6cpu e 6gb di ram):
+minikube config set cpus 6
+minikube config set memory 6144
+
+Avviare minikube con cni calico attivo:
+minikube start --cni=calico
+
+Installazione addons minikube:
+minikube addons enable metrics-server
+
+Avvio della dashboard e del tunnel:
+minikube tunnel
+minikube dashboard
+
+Installazione dei chart utili (posizionarsi nella cartella helm_charts_values):
+
+Ingress Nginx:
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f nginx-values.yaml
+
+Grafana e Prometeus:
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace -f prometheus-values.yaml
+
+Loki:
+helm install loki grafana/loki-stack --namespace monitoring --version 2.10.2 --create-namespace -f loki-values.yaml
+
+Cert Manager:
+helm repo add jetstack https://charts.jetstack.io
+helm repo update
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace -f cert-manager-values.yaml
+
+Vault:
+helm repo add hashicorp https://helm.releases.hashicorp.com
+helm repo update
+helm install vault hashicorp/vault --namespace vault --create-namespace -f vault-values.yaml
+
+Vault CSI:
+helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+helm repo update
+helm install csi secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system -f csi-values.yaml
+
+Tetragon:
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+helm install tetragon cilium/tetragon --namespace tetragon --create-namespace -f tetragon-values.yaml
+
+Creazione dei docker per minikube (posizionarsi nella cartella principale):
+& minikube -p minikube docker-env --shell powershell | Invoke-Expression
+docker build ./dockers/express -f ./dockers/express/Dockerfile -t express:v1
+docker build ./dockers/keycloak -f ./dockers/keycloak/Dockerfile -t keycloak:v1
+
+Applicazione dell'helm chart dell'app (posizionarsi nella cartella /chart):
+helm install app ./chart --namespace app --create-namespace
+
+Inizializzazione Vault e CSI:
+Seguire la guida generica Vault_Guide.md
+Creare i segreti
+Creare le policy
+Creare i ruoli
+
+Applicazione dei Secret Provider Class (per tutti gli spc):
+kubectl apply --filename ./vault-csi/spc-vault-<nomeSPC>.yaml
+
+Applicazione del Job, dell'Issuer e del Certificate:
+kubectl apply --filename ./certificate/cloudflare-secret-job.yaml
+kubectl apply --filename ./certificate/unified-cluster-issuer.yaml
+kubectl apply --filename ./certificate/unified-cert.yaml
+
+Verifica che tutto sia funzionante dalla dashboard e risolvere eventuali problemi.

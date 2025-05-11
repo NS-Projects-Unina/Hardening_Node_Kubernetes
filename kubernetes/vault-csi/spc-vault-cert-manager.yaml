@@ -1,0 +1,22 @@
+---
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: cloudflare-certmanager
+  namespace: cert-manager
+spec:
+  provider: vault
+  secretObjects:
+    - secretName: cloudflare-api-token-secret
+      type: Opaque
+      data:
+        - objectName: api-token
+          key: api-token
+  parameters:
+    roleName: cert-manager-role
+    vaultAddress: "http://vault.vault.svc.cluster.local:8200"
+    objects: |
+      - objectName: api-token
+        secretPath: "secret/data/cert-manager"
+        secretKey: "api_token"
+    syncSecret: "true"
