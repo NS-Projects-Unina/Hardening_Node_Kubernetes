@@ -96,10 +96,6 @@ Di seguito è riportata una panoramica delle principali cartelle e dei file pres
 
 Contiene tutto il necessario per lo sviluppo del frontend dell'applicazione, realizzato in ReactJS. Include i componenti, le pagine, i file statici, le configurazioni di build e le dipendenze specifiche per il client.
 
-## Testing
-
-Per testare e visualizzare l'applicazione in ambiente di staging, è disponibile una demo pubblica accessibile all’indirizzo: [www.frascoengineer.com](http://www.frascoengineer.com).
-
 # Gli Autori
 
 - Francesco Scognamiglio
